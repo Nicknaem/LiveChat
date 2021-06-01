@@ -1,0 +1,61 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="./style.css"> -->
+</head>
+<style>
+    *{
+        margin:0;
+        padding:0;
+        box-sizing: border-box;
+        font-family: "Comic Sans MS", "Comic Sans", cursive;
+    }
+    #room-container{
+        margin-top: 50px;
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+    }
+    .container{
+        width: 1124px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    #user-image{
+        margin-top: 100px;
+        height: 170px;
+        width: 170px;
+        border-radius: 50%;
+        background-color:rgb(189, 236, 189);
+        box-shadow: 1px 1px 7px 0px rgb(0 0 0 / 30%)
+    }
+    #user-name{
+        margin-top: 50px;
+        border: none;
+        outline: none;
+        box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+        border-radius:50px;
+        font-size: 1.5em;
+        padding: 10px 15px;
+    }
+    #user-name::placeholder{
+        color: rgba(0,0,0,0.3);
+    }
+</style>
+<body class="container">
+    <div id="user-image"></div>
+    <input id="user-name" type="text" placeholder="Enter your name">
+    <div id="room-container">
+        <room-card>Time Mode</room-card>
+        <room-card>Hit Mode</room-card>
+        <room-card>Eat Mode</room-card>
+    </div>
+</body> 
+<script type="module" src="../components/room-card.js"></script>
+<!-- <script src="./main.js"></script> -->
+</html>

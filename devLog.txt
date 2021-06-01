@@ -1,0 +1,4 @@
+
+Q: am I gvinig data to component correctly?
+Q: give data to component in props maybe object
+Q: using Id's in web component styling
