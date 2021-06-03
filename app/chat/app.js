@@ -1,16 +1,18 @@
 const socket = io();
 const messageForm = document.getElementById('message-form');
 const chatDiv = document.getElementById('chat-section');
-
+let user = "nikka";
+let room = "TimeMode"
 //=================================== Socket Emits
+
+//joining the correct room
+//this should happen on roomCard click
+socket.emit('join', {user,room})
 
 messageForm.addEventListener('submit',(event)=>{
     event.preventDefault();
     const msgText = event.target.elements['message-input'];  //HTLMFormElement mozdev
-    socket.emit('chatMessage', {
-        userName: "UserName",
-        text: msgText.value
-    })
+    socket.emit('chatMessage', msgText.value)
     msgText.value = '';
     msgText.focus();
 })
@@ -25,7 +27,6 @@ socket.on('chatMessage', (messageData)=>{
 })  
 
 //=================================== App functions
-
 let renderMessage = (msgProps)=>{
 
     let msgDiv = document.createElement('user-message');

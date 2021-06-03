@@ -18,6 +18,7 @@ app.use(express.static(__dirname + '/app'));    //serve static files
 //================================== MongoDb connection
 const MongoClient = require('mongodb').MongoClient;
 const { config } = require('process');
+const { create } = require('domain');
 
 MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)=>{
   if(err){
@@ -34,44 +35,137 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
 //=================================== socketio
 
 io.on('connection',(socket)=>{
-//=================================== Socket Emits
-  console.log('user connnected :'+socket.id);
-  socket.emit('chatMessage', createMessage('ChatBot','hello there'));
 
-  //to all clients except current client
-  socket.broadcast.emit('chatMessage',createMessage('ChatBot','another user joined chat'))
+  socket.on('join', ({user, room})=>{
+    
+    addActiveUser(socket.id, user, room);
+    //joining the correct room
+    socket.join(room)
+
+    //notify all clients in the room except current client
+    let welcomeMessage = createMessage('ChatBot',`${user} joined chat`);
+    socket.broadcast.to(room).emit('chatMessage',welcomeMessage);
+    //saving chat login info (welcome message)
+    saveMessage(welcomeMessage);
+    
+
+    //Now Get limited amount of messages from db and emit that to current user
+    getMessages(room, 20) //limit(20)
+    .then((response)=>{
+      console.log(response)
+      //I think theres no need to convert response.json()
+      //emit should happen somwere here
+    })
+
+    //just throw welcome message for current client
+    socket.emit('chatMessage', createMessage('ChatBot',`Welcome back ${user}`));
+  })
 
 //=================================== Socket Listeners
 
+  socket.on('chatMessage', (msgText)=>{
+    //getting this current active user Name and Room 
+    const user = getActiveUser(socket.id); //$$? can it be async, everything should happen after .then
+    //getting data about user, image, achivements, vipStatus ...
+    const userDetails = getUserData(user.name);
+
+    io.to(user.room).emit('chatMessage', createMessage(user.name, msgText, userDetails));
+
+    //saving only necessary message information
+    saveMessage(createMessage(user.name,msgText));
+  })
+
   socket.on('disconnect', ()=>{
-    io.emit('chatMessage',createMessage('ChatBot','some user left the chat'))
-  })
+    const user = removeActiveUser(socket.id); //$$? can it be async, everything should happen after .then
+    let leaveMessage = createMessage('ChatBot',`${user.name} left the chat`);
 
-  socket.on('chatMessage', (msg)=>{
-    //update message records asyncronously
-    //find image of msg.user in db, and send it also
-    io.emit('chatMessage', createMessage(msg.userName, msg.text));
+    socket.broadcast.to(user.room).emit('chatMessage', leaveMessage )
+    saveMessage(leaveMessage);
   })
 
 })
 
-//=================================== Routes
-app.get('/chat', (req, res) => {
-    //if req.pin = db.findUser pin
-    res.sendFile(__dirname + '/app/chat/chat.html');
-  })
+//=================================== Mongo queries
 
-app.get('/*', (req, res) => {
-    res.sendFile(__dirname + '/app/main/main.html');
-})
+let saveMessage = async (params)=>{
+  let collection = Connection.get().collection('chatRooms');
+  await collection.updateOne({room: params.room}, 
+    { 
+        $push: {
+          chatHistory: {
+            user: params.user,
+            message: params.text,
+            date: params.date
+          }
+        }
+    },{upsert:true})
+}
+//$$! update users could also remove user from activeUsers
+let addActiveUser = async (id, user, room)=>{
+  let collection = Connection.get().collection('chatRooms');
+  await collection.updateOne({room: room}, 
+    { 
+        $push: { 
+          activeUsers: {id, user, room} //this is shorthand, it will make given variables as object field names
+        }
+    },{upsert:true})
+}
 
-//=================================== helper js
-var currentDate = new Date();
+let removeActiveUser = (id)=>{
+  let collection = Connection.get().collection('chatRooms');
+  //search user in all active rooms, well this is not good solution.  
+  //find remove user and return
+  return collection.find()
+}
 
-let createMessage = (username, text)=>{
-  return{
+let getActiveUser = (id)=>{
+  let collection = Connection.get().collection('chatRooms');
+  //find and return
+  return collection.find()
+}
+
+let getMessages = async (room,limit)=>{
+  let collection = Connection.get().collection('chatRooms');
+  let cursor = await collection.find({room:room}, {chatHistory: 1}) //you should find last 20 messages in room chatHistory   
+  let data = await cursor.toArray();
+  return data;      
+}
+
+let createMessage = (username, text, userDetails)=>{
+  let msgData ={
     username: username,
     text: text,
     date: Date().slice(16,21)
   }
+  if(image){msgData.details = userDetails;}
+
+  return msgData;
 }
+
+
+//=================================== Routes
+
+
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/app/main/main.html');
+})
+
+app.get('/chat', (req, res) => {
+  //if queryParams.pin === db.findUser.pin
+  //send client to the chat.html and pass userName
+  //else dont give access to chat.html
+
+  var queryParams = req.query;
+  console.log(queryParams)
+  // res.sendFile(__dirname + '/app/chat/chat.html');
+  res.redirect('/chat/chat.html')
+  
+})
+
+app.post('/login', (req,res)=>{
+  //if req.pin == db.findUser.pin 
+  //send back user stats
+  //and login:true, to freeze userName field, and other styles for loggedIn state
+})
+
+

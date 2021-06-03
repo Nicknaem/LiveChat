@@ -8,12 +8,12 @@ class UserMessage extends LitElement{
         return html`
             <style>
                 .image{
-                    background-image:url(${this.userimage})
+                    background-image:url(${this.props.image})
                 }
             </style>   
             <div class="message">
                 <div class="image"></div>
-                <div class="name">${this.props.name}</div>
+                <div class="name">${this.props.username}</div>
                 <div class="text">${this.props.text}</div>
                 <div class="date">${this.props.date}</div>
             </div>

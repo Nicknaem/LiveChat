@@ -1,4 +1,5 @@
 const userName = document.getElementById('user-name');
+const cards = document.querySelector('.card');
 
 userName.addEventListener('onchange',()=>{
     //debounce and check if user name is available in users collection
@@ -27,9 +28,21 @@ userName.addEventListener('onchange',()=>{
     res.send {image, stats, loggedIN:true}
     freeze username, hide password
 */
+document.querySelectorAll('room-card').forEach(element => {
+    element.addEventListener('room-click', (params)=>{
+        //if LoggedIn = true
+        //fetch get chat.html, {userName:"nika", chatRoom:"timeMode" pin:"394" }
 
-document.getElementById('room-container').addEventListener('room-click', (params)=>{
-    //if LoggedIn = true
-    //fetch get chat.html, {userName:"nika", chatRoom:"timeMode" pin:"394" }
+        fetch('/chat?' + new URLSearchParams({
+            user: userName.value,
+            pin: "123", //$$!take pin from input 
+            room: params.detail.gameMode
+            })
+        )
+    })
+});
+cards
+
+    
+    
     //else please login or create account
-})

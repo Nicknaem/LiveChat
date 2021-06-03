@@ -2,3 +2,13 @@
 Q: am I gvinig data to component correctly?
 Q: give data to component in props maybe object
 Q: using Id's in web component styling
+
+
+Q: room-card event
+Q: routes order
+Q: custom element bubble up
+Q: gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
+
+$$: message records should be updated async
+
+Q: can I make mongo query not async?

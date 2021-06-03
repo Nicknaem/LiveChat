@@ -5,7 +5,7 @@ class RoomCard extends LitElement{
     render(){       
         return html`
             <style>
-                .room-card{
+                #room-card{
                     display:flex;
                     flex-direction: column;
                     width: 300px;
@@ -13,7 +13,7 @@ class RoomCard extends LitElement{
                     box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
                     padding-bottom: 20px;
                 }
-                .room-card:hover{
+                #room-card:hover{
                     cursor:pointer;
                 }
                 .mode, .players{
@@ -26,13 +26,30 @@ class RoomCard extends LitElement{
                     color: limegreen;
                 }
             </style>   
-            <div class="room-card">
-               <div class="mode"><slot></slot></div>
+            <div id="room-card">
+               <div class="mode"><slot id="mode"></slot></div>
                <div class="players">${this.players} Players</div>
             </div>
         `
     };
+    connectedCallback() {
+        super.connectedCallback()
 
+        this.addEventListener('click', ()=>{
+            let event = new CustomEvent('room-click', {
+                detail: {
+                  gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
+                }
+              });
+              this.dispatchEvent(event);
+        })
+    }
+
+        //=================================== component listeners      
+//lifecycle lit element slotted node event
+        
+
+    
     static get properties() {
         return { 
           players: {
