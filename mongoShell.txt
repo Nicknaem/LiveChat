@@ -1,0 +1,98 @@
+[
+  {
+    item: "journal",
+    qty: 25,
+    size: [
+      {
+        h: 14,
+        uom: "cm"
+      },
+      {
+        h: 15,
+        uom: "cm"
+      },
+      {
+        h: 13,
+        uom: "cm"
+      },
+      {
+        h: 12,
+        uom: "cm"
+      }
+    ],
+    status: "A"
+  },
+  {
+    item: "notebook",
+    qty: 50,
+    size: [
+      {
+        h: 2,
+        uom: "in"
+      },
+      {
+        h: 3,
+        uom: "in"
+      }
+    ],
+    status: "B"
+  },
+  {
+    item: "paper",
+    qty: 100,
+    size: [
+      {
+        h: 8.5,
+        w: 11,
+        uom: "in"
+      },
+      {
+        h: 4.5,
+        w: 31,
+        uom: "in"
+      }
+    ],
+    status: "D"
+  }
+]
+
+Q:return items of only journal 
+
+db.collection.aggregate({
+  "$project": {
+    size: 1,
+    _id: 0
+  }
+},
+{
+  "$unwind": "$size"
+}
+)
+
+Q:return only h:14
+
+Update({},
+    {
+      $pull: {
+        activeUsers: {
+          id: id
+        }
+      }
+    },
+    {
+      multi: true
+    })
+
+
+//actvie users
+    db.collection.aggregate({
+  "$unwind": "$activeUsers"
+},
+{
+  "$project": {
+    chatHistory: 0,
+    _id: 0,
+    room: 0
+  }
+},
+)

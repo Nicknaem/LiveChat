@@ -1,7 +1,7 @@
 const socket = io();
 const messageForm = document.getElementById('message-form');
 const chatDiv = document.getElementById('chat-section');
-let user = "nikka";
+let user = "nika";
 let room = "TimeMode"
 //=================================== Socket Emits
 

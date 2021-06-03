@@ -13,7 +13,7 @@ class UserMessage extends LitElement{
             </style>   
             <div class="message">
                 <div class="image"></div>
-                <div class="name">${this.props.username}</div>
+                <div class="name">${this.props.user}</div>
                 <div class="text">${this.props.text}</div>
                 <div class="date">${this.props.date}</div>
             </div>
