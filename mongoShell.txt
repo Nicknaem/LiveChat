@@ -96,3 +96,8 @@ Update({},
   }
 },
 )
+
+
+{user} = {
+  activeUsers: { id: 'zPVhvl8gXinIRniQAAAD', user: 'nika', room: 'TimeMode' }
+}

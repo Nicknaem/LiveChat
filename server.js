@@ -42,51 +42,55 @@ io.on('connection',(socket)=>{
     //joining the correct room
     socket.join(room)
 
-    //notify all clients in the room except current client
+    //create welcome message
     let welcomeMessage = createMessage('ChatBot',`${user} joined chat`);
-    socket.broadcast.to(room).emit('chatMessage',welcomeMessage);
-    //saving chat login info (welcome message)
-    saveMessage(welcomeMessage,room);
-    
 
     //Now Get limited amount of messages from db and emit that to current user
-    getMessages(room, 20) //limit(20)
+    getMessages(room, 5) //limit(5)
     .then((response)=>{
-      console.log(response)
+
       //emit all messages to client, check for userData and send its details also 
       response.forEach(msg => {
         socket.emit('chatMessage',createMessage(msg.chatHistory.user, msg.chatHistory.message, msg.chatHistory.date)); 
       });
       
-      
+      //just throw welcome message for current client
+      socket.emit('chatMessage', createMessage('ChatBot',`Welcome back ${user}`));
+
+      //notify all clients in the room except current client
+      socket.broadcast.to(room).emit('chatMessage',welcomeMessage);
+
+      //saving chat login info (welcome message)
+      saveMessage(welcomeMessage,room);
     })
 
-    //just throw welcome message for current client
-    socket.emit('chatMessage', createMessage('ChatBot',`Welcome back ${user}`));
+
+
   })
 
 //=================================== Socket Listeners
 
   socket.on('chatMessage', (msgText)=>{
     //getting this current active user Name and Room 
-    getActiveUser(socket.id).then(user=>{
-      //$$##BUG user is undefined
-      //getting data about user, image, achivements, vipStatus ...
-      getUserData(user.name).then(userDetails =>{
+    getActiveUser(socket.id).then((user)=>{
 
-        io.to(user.room).emit('chatMessage', createMessage(user.name, msgText,null, userDetails));
+      //getting data about user, image, achivements, vipStatus ...
+      getUserData(user.activeUsers.user).then(userDetails =>{
+
+        io.to(user.activeUsers.room).emit('chatMessage', createMessage(user.activeUsers.user, msgText, null, userDetails));
         //saving only necessary message information
-        saveMessage(createMessage(user.name,msgText), user.room);
+        saveMessage(createMessage(user.activeUsers.user, msgText), user.activeUsers.room);
 
       })
     }) 
   })
 
   socket.on('disconnect', ()=>{
-      getActiveUser(socket.id).then(user=>{
-        let leaveMessage = createMessage('ChatBot',`${user.name} left the chat`);
+      getActiveUser(socket.id).then((user)=>{
 
-        socket.broadcast.to(user.room).emit('chatMessage', leaveMessage )
+        let leaveMessage = createMessage('ChatBot',`${user.activeUsers.user} left the chat`);
+
+        socket.broadcast.to(user.activeUsers.room).emit('chatMessage', leaveMessage )
         // saveMessage(leaveMessage);
         removeActiveUser(socket.id)
       })
@@ -126,7 +130,7 @@ let removeActiveUser = async (id)=>{
   //Update doesnot return removed object
   //findOneAndUpdate returns original removed object, but show all the document,couldnot project the only removed object from nested array
   
-  let user = await collection.update({},
+  let user = await collection.updateMany({},
     {
       $pull: {
         activeUsers: {
@@ -134,22 +138,39 @@ let removeActiveUser = async (id)=>{
         }
       }
     },
+)
+/* 
     {
       multi: true
-    })
+    }
+*/
 }
 
 let getActiveUser = async (id)=>{
   let collection = Connection.get().collection('chatRooms');
   //find and return //$$## returns whole document
-  let user = await collection.find({
-    "activeUsers.id": id
-  },
-  {
-    activeUsers: 1,
-    _id: 0
-  })
-  let converted = await user.toArray();
+  let user = await collection.aggregate([
+    {
+      "$match": {
+        "activeUsers.id": id
+      }
+    },
+    {
+      "$project": {
+        _id: 0,
+        activeUsers: 1
+      }
+    },
+    {
+      "$unwind": "$activeUsers"
+    },
+    {
+      "$match": {
+        "activeUsers.id": id
+      }
+    }
+  ])
+  let converted = await user.next();
   console.log(converted);
   return converted
 }
@@ -159,22 +180,22 @@ let getActiveUser = async (id)=>{
 let getMessages = async (room,limit)=>{
   let collection = Connection.get().collection('chatRooms');
   let cursor = await collection.aggregate({
-    "$match": {
-      room: room
-    }
-  },
-  {
-    "$project": {
-      chatHistory: 1,
-      _id: 0
-    }
-  },
-  {
-    "$unwind": "$chatHistory"
-  },
-  {
-    "$limit": limit
-  }) //you should find last 5 messages in room chatHistory   
+      "$match": {
+        room: room
+      }
+    },
+    {
+      "$project": {
+        chatHistory: 1,
+        _id: 0
+      }
+    },
+    {
+      "$unwind": "$chatHistory"
+    },
+    {
+      "$limit": limit
+    }) //you should find last 5 messages in room chatHistory   
   let data = await cursor.toArray();
   return data;      
 }
