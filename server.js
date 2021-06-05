@@ -72,25 +72,25 @@ io.on('connection',(socket)=>{
 
   socket.on('chatMessage', (msgText)=>{
     //getting this current active user Name and Room 
-    getActiveUser(socket.id).then((user)=>{
+    getActiveUser(socket.id).then(({activeUsers:userData}=activeUsers)=>{
 
       //getting data about user, image, achivements, vipStatus ...
-      getUserData(user.activeUsers.user).then(userDetails =>{
+      getUserData(userData.user).then(userDetails =>{
 
-        io.to(user.activeUsers.room).emit('chatMessage', createMessage(user.activeUsers.user, msgText, null, userDetails));
+        io.to(userData.room).emit('chatMessage', createMessage(userData.user, msgText, null, userDetails));
         //saving only necessary message information
-        saveMessage(createMessage(user.activeUsers.user, msgText), user.activeUsers.room);
+        saveMessage(createMessage(userData.user, msgText), userData.room);
 
       })
     }) 
   })
 
   socket.on('disconnect', ()=>{
-      getActiveUser(socket.id).then((user)=>{
+      getActiveUser(socket.id).then(({activeUsers:userData}=activeUsers)=>{
 
-        let leaveMessage = createMessage('ChatBot',`${user.activeUsers.user} left the chat`);
+        let leaveMessage = createMessage('ChatBot',`${userData.user} left the chat`);
 
-        socket.broadcast.to(user.activeUsers.room).emit('chatMessage', leaveMessage )
+        socket.broadcast.to(userData.room).emit('chatMessage', leaveMessage )
         // saveMessage(leaveMessage);
         removeActiveUser(socket.id)
       })
@@ -171,7 +171,7 @@ let getActiveUser = async (id)=>{
     }
   ])
   let converted = await user.next();
-  console.log(converted);
+  // console.log(converted);
   return converted
 }
 
@@ -221,27 +221,14 @@ let createMessage = (username, text, date, userDetails)=>{
 
 //=================================== Routes
 
-
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/app/main/main.html');
-})
-
-app.get('/chat', (req, res) => {
-  //if queryParams.pin === db.findUser.pin
-  //send client to the chat.html and pass userName
-  //else dont give access to chat.html
-
-  var queryParams = req.query;
-
-  // res.sendFile(__dirname + '/app/chat/chat.html');
-  res.redirect('/chat/chat.html')
-  
-})
-
 app.post('/login', (req,res)=>{
   //if req.pin == db.findUser.pin 
   //send back user stats
   //and login:true, to freeze userName field, and other styles for loggedIn state
+})
+
+app.get('/*', (req, res) => {
+  res.sendFile(__dirname + '/app/chat/chat.html');
 })
 
 

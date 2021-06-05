@@ -1,8 +1,8 @@
 const socket = io();
 const messageForm = document.getElementById('message-form');
 const chatDiv = document.getElementById('chat-section');
-let user = "nika";
-let room = "TimeMode"
+let user = "gio";
+let room = "HitMode"
 //=================================== Socket Emits
 
 //joining the correct room

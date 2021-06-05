@@ -28,6 +28,7 @@ userName.addEventListener('onchange',()=>{
     res.send {image, stats, loggedIN:true}
     freeze username, hide password
 */
+console.log("chame in main");
 document.querySelectorAll('room-card').forEach(element => {
     element.addEventListener('room-click', (params)=>{
         //if LoggedIn = true
