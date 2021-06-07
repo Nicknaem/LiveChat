@@ -32,18 +32,18 @@ class RoomCard extends LitElement{
             </div>
         `
     };
-    connectedCallback() {
-        super.connectedCallback()
+    // connectedCallback() {
+    //     super.connectedCallback()
 
-        this.addEventListener('click', ()=>{
-            let event = new CustomEvent('room-click', {
-                detail: {
-                  gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
-                }
-              });
-              this.dispatchEvent(event);
-        })
-    }
+    //     this.addEventListener('click', ()=>{
+    //         let event = new CustomEvent('route-click', {
+    //             detail: {
+    //               gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
+    //             }
+    //           });
+    //           this.dispatchEvent(event);
+    //     })
+    // }
 
         //=================================== component listeners      
 //lifecycle lit element slotted node event

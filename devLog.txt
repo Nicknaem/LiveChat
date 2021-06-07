@@ -12,3 +12,8 @@ Q: gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
 $$: message records should be updated async
 
 Q: can I make mongo query not async?
+
+Q: cannot read attribute set on custom element <room-card href="/chat">
+Q: global styles override component styles * margin
+Q: getElementsByName didnot work on this.shadowRoot
+Q: connectedcallback doesnot see DOM

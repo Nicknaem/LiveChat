@@ -37,6 +37,8 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
 io.on('connection',(socket)=>{
 
   socket.on('join', ({user, room})=>{
+
+    //check if autentificated?
     
     addActiveUser(socket.id, user, room);
     //joining the correct room
@@ -228,7 +230,7 @@ app.post('/login', (req,res)=>{
 })
 
 app.get('/*', (req, res) => {
-  res.sendFile(__dirname + '/app/chat/chat.html');
+  res.sendFile(__dirname + '/app/app.html');
 })
 
 
