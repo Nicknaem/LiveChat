@@ -1,15 +1,17 @@
 export default class App{
-    static socket;
-    static appRoot;
-    static user;
-    static room;
-    static loginStatus = true;
+  //  static socket;
+ //   static appRoot;
+  //  static user;
+ //   static room;
+  //  static loginStatus = true;
 
-    static routes = [
-        { path:"/", page: "<main-page></main-page>"},
-        { path:"/chat", page: "<chat-page></chat-page>" },
-        { path:"/leaderboard", page: "<leaderboard-page></leaderboard-page>"}
-    ]
+    static get routes(){
+        return [
+            { path:"/", page: "<main-page></main-page>"},
+            { path:"/chat", page: "<chat-page></chat-page>" },
+            { path:"/leaderboard", page: "<leaderboard-page></leaderboard-page>"}
+        ]
+    }
     static updateRoute = ()=>{
         let matchingPage;
         this.routes.forEach((pageRoute)=>{
@@ -38,8 +40,12 @@ App.socket = io();
 App.appRoot = document.getElementById('app-root');
 
 
-//go back loac correct page
-window.addEventListener('popstate',App.updateRoute);
+//go back load correct page
+//if popback happens from chat page , it should log out chat room
+window.addEventListener('popstate', ()=>{
+    App.socket.emit('leave')
+    App.updateRoute();
+});
 //on connect load correct page 
 document.addEventListener('DOMContentLoaded',()=>{
     App.updateRoute();

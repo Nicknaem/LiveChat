@@ -1,5 +1,4 @@
 import { LitElement, html, css } from "https://unpkg.com/lit-element/lit-element.js?module"
-import Router from "/pageLogics/router.js"
 
 class AppBody extends LitElement{
     static get styles() {

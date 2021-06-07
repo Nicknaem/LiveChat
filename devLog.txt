@@ -49,6 +49,26 @@ const setAttributes = (element, attributesObject) => {
     // `;
     */
 
+//navigator buttons
+
+document.getElementsByName('route-link).forEach(element=>{
+            element.addEventListener('click',(event)=>{
+                    event.preventDefault();
+                    App.navigateTo(event.currentTarget.href)
+                }
+            )
+        })
+
+//dispatching custom event
+this.addEventListener('click', ()=>{
+            let event = new CustomEvent('route-click', {
+                detail: {
+                  gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
+                }
+              });
+              this.dispatchEvent(event);
+        })
+    
 //set routes to component
 
     <a href="/chat" name="route-link" >

@@ -36,6 +36,8 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
 
 io.on('connection',(socket)=>{
 
+//=================================== Socket Listeners
+
   socket.on('join', ({user, room})=>{
 
     //check if autentificated?
@@ -65,12 +67,7 @@ io.on('connection',(socket)=>{
       //saving chat login info (welcome message)
       saveMessage(welcomeMessage,room);
     })
-
-
-
   })
-
-//=================================== Socket Listeners
 
   socket.on('chatMessage', (msgText)=>{
     //getting this current active user Name and Room 
@@ -88,16 +85,23 @@ io.on('connection',(socket)=>{
   })
 
   socket.on('disconnect', ()=>{
-      getActiveUser(socket.id).then(({activeUsers:userData}=activeUsers)=>{
-
-        let leaveMessage = createMessage('ChatBot',`${userData.user} left the chat`);
-
-        socket.broadcast.to(userData.room).emit('chatMessage', leaveMessage )
-        // saveMessage(leaveMessage);
-        removeActiveUser(socket.id)
-      })
+    leaveChat()
+  })
+  socket.on('leave', ()=>{
+    leaveChat()
   })
 
+  const leaveChat = () => {
+    getActiveUser(socket.id).then(({activeUsers:userData}=activeUsers)=>{
+
+      let leaveMessage = createMessage('ChatBot',`${userData.user} left the chat`);
+
+      socket.broadcast.to(userData.room).emit('chatMessage', leaveMessage );
+      socket.leave(userData.room)
+      // saveMessage(leaveMessage);
+      removeActiveUser(socket.id)
+    })
+  }
 })
 
 //=================================== Mongo queries
@@ -203,8 +207,10 @@ let getMessages = async (room,limit)=>{
 }
 
 let getUserData = async (name)=>{
-  const searchCursor = await Connection.get().collection('users').find({name:name});
+  let collection = Connection.get().collection('users');
+  const searchCursor = await collection.find({name:name});
   const foundUser = await searchCursor.toArray();
+  console.log(foundUser);
   return foundUser;
 }
 

@@ -17,6 +17,8 @@ class MainPage extends LitElement{
                 width: 170px;
                 border-radius: 50%;
                 background-color:rgb(189, 236, 189);
+                background-size: cover;
+                background-position: center;
                 box-shadow: 1px 1px 7px 0px rgb(0 0 0 / 30%)
             }
             #user-input{
@@ -38,35 +40,18 @@ class MainPage extends LitElement{
       }
     render(){       
         return html`
-            <div id="user-image"></div>
+            <div id="user-image" style='background-image:url("/Assets/Snakes/snake1.jpg")'></div>
             <input id="user-input" type="text" placeholder="Enter your name">
             <div id="room-container">
-                <a href="/chat" name="route-link" >
-                    <room-card>Time Mode</room-card>
-                </a>
-                <a href="/chat" name="route-link" >
-                    <room-card>Hit Mode</room-card>
-                </a>
-                <a href="/chat" name="route-link" >
-                    <room-card>Eat Mode</room-card>
-                </a>
+                <room-card>Time Mode</room-card>
+                <room-card>Hit Mode</room-card>
+                <room-card>Eat Mode</room-card>
             </div>
         `
     }
 
     firstUpdated() {
         this.userInput = this.shadowRoot.getElementById('user-input');
-        
-        this.shadowRoot.querySelectorAll("[name='route-link']").forEach(element=>{
-            // console.log(element);
-            element.addEventListener('click',(event)=>{
-                    event.preventDefault();
-                    // console.log(event.currentTarget)
-                    App.room = "TimeMode"; //$$!
-                    App.navigateTo(event.currentTarget.href)
-                }
-            )
-        })
 
         this.userInput.addEventListener('input',(event)=>{
             console.log('changed username',event.target.value);

@@ -1,4 +1,5 @@
 import { LitElement, html } from "https://unpkg.com/lit-element/lit-element.js?module"
+import App from '/app.js'
 
 class RoomCard extends LitElement{
 
@@ -32,29 +33,19 @@ class RoomCard extends LitElement{
             </div>
         `
     };
-    // connectedCallback() {
-    //     super.connectedCallback()
+    firstUpdated() {
 
-    //     this.addEventListener('click', ()=>{
-    //         let event = new CustomEvent('route-click', {
-    //             detail: {
-    //               gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
-    //             }
-    //           });
-    //           this.dispatchEvent(event);
-    //     })
-    // }
-
-        //=================================== component listeners      
-//lifecycle lit element slotted node event
+        this.addEventListener('click', (event)=>{
+            App.room = this.shadowRoot.getElementById('mode').assignedNodes()[0].data;
+            App.navigateTo('/chat');
+        })
+    }
         
 
     
     static get properties() {
         return { 
-          players: {
-              type: Number
-          }
+          players: { type: Number }
         };
     }
 
