@@ -17,3 +17,50 @@ Q: cannot read attribute set on custom element <room-card href="/chat">
 Q: global styles override component styles * margin
 Q: getElementsByName didnot work on this.shadowRoot
 Q: connectedcallback doesnot see DOM
+
+//==================== Achived functions
+const setAttributes = (element, attributesObject) => {
+    console.log(attributesObject);
+    for (var key in attributesObject) {
+        element.setAttribute(key, attributesObject[key]);
+    }
+}
+
+
+//==================== Removed codes
+
+//send data to web component
+    //method: 3 give it through props
+    msgDiv.props = msgProps;
+    /*    
+    //method: 1 give it through custom html data attributes
+    // setAttributes(msgDiv, {
+    //     'data-userimg': msgProps.img,
+    //     'data-username': msgProps.name,
+    //     'data-usermsg': msgProps.text,
+    //     'data-msgdate': msgProps.date,
+    // })
+        
+    //method: 2 give it thorugh slots
+    // msgDiv.innerHTML =` 
+    //     <slot name="userImg"></slot>
+    //    P <slot name="msgText">${msg}</slot>
+    //     <slot name="msgDate"></slot>    
+    // `;
+    */
+
+//set routes to component
+
+    <a href="/chat" name="route-link" >
+        <room-card >Time Mode</room-card>
+    </a>
+    <a href="/chat" name="route-link" >
+        <room-card >Hit Mode</room-card>
+    </a>
+    <a href="/chat" name="route-link" >
+        <room-card >Eat Mode</room-card>
+    </a>
+
+    <room-card href="/chat" name="route-link" >Time Mode</room-card>
+    <room-card href="/chat" name="route-link" >Hit Mode</room-card>
+    <room-card href="/chat" name="route-link" >Eat Mode</room-card>

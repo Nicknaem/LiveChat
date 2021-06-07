@@ -19,7 +19,7 @@ export default class Router{
             history.pushState(null,null,"/");
         }
 
-        loadPage(matchingPage.page);
+        this.loadPage(matchingPage.page);
     } 
 
     static navigateTo = (url)=>{
@@ -30,5 +30,4 @@ export default class Router{
     static loadPage(page){
         this.appRoot.innerHTML = page;
     }
-
 }

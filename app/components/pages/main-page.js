@@ -1,6 +1,6 @@
 import { LitElement, html, css} from "https://unpkg.com/lit-element/lit-element.js?module"
 import "/components/room-card.js"
-import Router from "/pageLogics/router.js"
+import App from "/app.js"
 
 class MainPage extends LitElement{
     static get styles() {
@@ -41,39 +41,47 @@ class MainPage extends LitElement{
             <div id="user-image"></div>
             <input id="user-input" type="text" placeholder="Enter your name">
             <div id="room-container">
-                <a href="/chat" name="route-link"  >
-                    <room-card href="/nika">Time Mode</room-card>
+                <a href="/chat" name="route-link" >
+                    <room-card>Time Mode</room-card>
                 </a>
-                <a href="/chat" name="route-link"  >
+                <a href="/chat" name="route-link" >
                     <room-card>Hit Mode</room-card>
                 </a>
-                <a href="/chat" name="route-link"  >
+                <a href="/chat" name="route-link" >
                     <room-card>Eat Mode</room-card>
                 </a>
             </div>
         `
     }
-    constructor(){
-        super();
-        const userInput = document.getElementById('user-input');
-    }
 
     firstUpdated() {
-        this.userInput = this.shadowRoot.querySelector('#user-input');
+        this.userInput = this.shadowRoot.getElementById('user-input');
+        
         this.shadowRoot.querySelectorAll("[name='route-link']").forEach(element=>{
+            // console.log(element);
             element.addEventListener('click',(event)=>{
                     event.preventDefault();
-                    Router.navigateTo(event.currentTarget.href)
+                    // console.log(event.currentTarget)
+                    App.room = "TimeMode"; //$$!
+                    App.navigateTo(event.currentTarget.href)
                 }
             )
         })
 
-        this.userInput.addEventListener('onchange',()=>{
-            console.log('changed username');
+        this.userInput.addEventListener('input',(event)=>{
+            console.log('changed username',event.target.value);
+            App.user = event.target.value;
             //debounce and check if user name is available in users collection
             //if yes show "OK" create user icon
             //esle login icon
         }) 
+
+        //creating account
+        /* 
+            on OK, post {userName, pin}, and insert it to database users collection
+            and => login
+            else please login or create account
+        */
     }
 
 }
