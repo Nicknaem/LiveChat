@@ -255,7 +255,8 @@ let getMessages = async (room,limit,timesBack=1)=>{
     {
       "$project": {
         "message": {
-          "$slice": ["$chatHistory",-limit*timesBack, limit] //$$!! if position is more then array elements empty array is returned, we loose some starting messages
+          "$slice": ["$chatHistory",-limit*timesBack, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+           //$$!! if position is more then array elements empty array is returned, we loose some starting messages
         },
         _id: 0
       }
@@ -264,6 +265,7 @@ let getMessages = async (room,limit,timesBack=1)=>{
       "$unwind": "$message"
     }
   ]) //you should find last N messages in room chatHistory   
+  console.log(limit*timesBack);
   let data = await cursor.toArray();
   return data;      
 }

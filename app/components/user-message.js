@@ -1,15 +1,24 @@
-import { LitElement, html } from "https://unpkg.com/lit-element/lit-element.js?module"
+import { LitElement, html, css } from "https://unpkg.com/lit-element/lit-element.js?module"
+import App from '/app.js'
 
 class UserMessage extends LitElement{
 
+    static get styles() {
+        return css`
+            .self{
+                background-color:rgba(0,100,0,0.3);
+            }
+        `;
+    }
+            // .image{
+            //     /* background-image:url(${this.props.userDetails.image}) */
+            // }
     render(){       
-        // const {userImage, userName} = this; //this way you have to order names respectively
-        console.log('message props from user-message',this.props);
         return html`
-            <style>
+        <style>
 
-            </style>   
-            <div class="message">
+        </style>
+            <div class="message ${this.props.userName == App.user ? "self":""}">
                 <div class="image"></div>
                 <div class="name">${this.props.userName}</div>
                 <div class="text">${this.props.text}</div>

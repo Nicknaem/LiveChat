@@ -34,7 +34,7 @@ class ChatPage extends LitElement{
             }
 
         `;
-      }
+    }
     render(){     
         return html`
             <div id="chat-page">
@@ -71,7 +71,7 @@ class ChatPage extends LitElement{
         const room = App.room;
         const messageForm = this.shadowRoot.getElementById('message-form');
         const messagesDiv = this.shadowRoot.getElementById('messages-section');
-        let scrollBack = 2;
+        let scrollBack = 3;
 
         //=================================== Socket emits
         //joining the correct room

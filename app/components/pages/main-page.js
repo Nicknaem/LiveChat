@@ -37,7 +37,7 @@ class MainPage extends LitElement{
                 text-decoration: none;
             }
         `
-      }
+    }
     render(){       
         return html`
             <div id="user-image" style='background-image:url("/Assets/Snakes/snake1.jpg")'></div>
