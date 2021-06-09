@@ -18,6 +18,10 @@ Q: global styles override component styles * margin
 Q: getElementsByName didnot work on this.shadowRoot
 Q: connectedcallback doesnot see DOM
 
+
+//==================== Tasks
+getter ebze gadaakete static fieldebi
+innerHtml ebi da komentarebi moashore
 //==================== Achived functions
 const setAttributes = (element, attributesObject) => {
     console.log(attributesObject);

@@ -5,23 +5,61 @@ import App from "/app.js"
 class ChatPage extends LitElement{
     static get styles() {
         return css`
-            
+            #chat-page{
+                height:100vh;
+                display:flex;
+                align-items:center;
+            }
+            #chat-section{
+                display:flex;
+                flex-direction:column;
+                height:80%;
+                width:25%;
+                justify-self:end;
+            }
+            #messages-section{
+                height:80%;
+                overflow-y:scroll;
+            }
+            #message-form{
+                height:20%;
+            }
+            #stats-section{
+                width:25%;
+                height:80%;
+            }
+            #game-board{
+                width:50%;
+                height:80%;
+            }
+
         `;
       }
     render(){     
         return html`
-            <div id="chat-section">
+            <div id="chat-page">
         
-                <form id="message-form">
-                    <input 
-                        id="message-input"
-                        type="text"
-                        placeholder="Type here" 
-                        autocomplete="off" 
-                        required
-                    />
-                    <button type="submit" id="message-button">Send</button>
-                </form>
+                <div id="stats-section">
+
+                </div>
+                <div id="game-board">
+
+                </div>
+                <div id="chat-section">
+                    <div id="messages-section">
+
+                    </div>
+                    <form id="message-form">
+                        <input 
+                            id="message-input"
+                            type="text"
+                            placeholder="Type here" 
+                            autocomplete="off" 
+                            required
+                        />
+                        <button type="submit" id="message-button">Send</button>
+                    </form>
+                </div>
                 
             </div>
         `
@@ -32,7 +70,7 @@ class ChatPage extends LitElement{
         const user = App.user;
         const room = App.room;
         const messageForm = this.shadowRoot.getElementById('message-form');
-        const chatDiv = this.shadowRoot.getElementById('chat-section');
+        const messagesDiv = this.shadowRoot.getElementById('messages-section');
 
         //=================================== Socket emits
         //joining the correct room
@@ -52,7 +90,7 @@ class ChatPage extends LitElement{
             renderMessage(messageData);
 
             //scrolldown
-            chatDiv.scrollTop = chatDiv.scrollHeight;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
         })
 
         let renderMessage = (msgProps) => {
@@ -60,7 +98,7 @@ class ChatPage extends LitElement{
 
             //send data to web component
             msgDiv.props = msgProps;
-            chatDiv.appendChild(msgDiv);
+            messagesDiv.appendChild(msgDiv);
         }
     }
 }

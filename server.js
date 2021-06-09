@@ -50,7 +50,7 @@ io.on('connection',(socket)=>{
     let welcomeMessage = createMessage('ChatBot',`${user} joined chat`);
 
     //Now Get limited amount of messages from db and emit that to current user
-    getMessages(room, 5) //limit(5)
+    getMessages(room, 3) //limit(5)
     .then((response)=>{
 
       //emit all messages to client, check for userData and send its details also 
@@ -200,9 +200,10 @@ let getMessages = async (room,limit)=>{
       "$unwind": "$chatHistory"
     },
     {
-      "$limit": limit
+      "$limit": 2
     }) //you should find last 5 messages in room chatHistory   
   let data = await cursor.toArray();
+  console.log(data);
   return data;      
 }
 
