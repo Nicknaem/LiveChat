@@ -4,16 +4,14 @@ class UserMessage extends LitElement{
 
     render(){       
         // const {userImage, userName} = this; //this way you have to order names respectively
-        console.log(this.props);
+        console.log('message props from user-message',this.props);
         return html`
             <style>
-                .image{
-                    background-image:url(${this.props.image})
-                }
+
             </style>   
             <div class="message">
                 <div class="image"></div>
-                <div class="name">${this.props.user}</div>
+                <div class="name">${this.props.userName}</div>
                 <div class="text">${this.props.text}</div>
                 <div class="date">${this.props.date}</div>
             </div>

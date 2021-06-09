@@ -98,6 +98,25 @@ Update({},
 )
 
 
-{user} = {
-  activeUsers: { id: 'zPVhvl8gXinIRniQAAAD', user: 'nika', room: 'TimeMode' }
-}
+//getting last N messages of nested array
+.aggregate([
+  {
+    "$match": {
+      room: "timemode"
+    }
+  },
+  {
+    "$project": {
+      "message": {
+        "$slice": [
+          "$chatHistory",
+          -2
+        ]
+      },
+      _id: 0
+    }
+  },
+  {
+    "$unwind": "$message"
+  }
+])

@@ -22,16 +22,48 @@ Q: connectedcallback doesnot see DOM
 //==================== Tasks
 getter ebze gadaakete static fieldebi
 innerHtml ebi da komentarebi moashore
-//==================== Achived functions
-const setAttributes = (element, attributesObject) => {
-    console.log(attributesObject);
-    for (var key in attributesObject) {
-        element.setAttribute(key, attributesObject[key]);
-    }
-}
+ukan unda gadmoyves username roca chatidan gamodis
+validacia chatshi saxelis gareshe ver unda shediodes
+pirdapir chatis linkze access ar unda qondes
+chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes
 
+//==================== Modified working code 
+       let renderMessage = (messages) => {
+
+            messages.forEach((msg)=>{
+                let msgDiv = document.createElement('user-message');
+                msgDiv.props = msg;
+                messagesDiv.appendChild(msgDiv);
+            })
+        }
+    }
+//=================================== Q/A
+Q: LIMIT DOESNOT WORK LIKE this
+let cursor = await collection.aggregate({
+      "$match": {
+        room: room
+      }
+    },
+    {
+      "$project": {
+        chatHistory: 1,
+        _id: 0
+      }
+    },
+    {
+      "$unwind": "$chatHistory"
+    },
+    {
+      "$limit": 2
+    })
+A: it just needed [] square brackets to make limit stage work!!!
 
 //==================== Removed codes
+
+//emit all messages to client, check for userData and send its details also 
+    // response.forEach(msg => {
+    //   socket.emit('chatMessage',createMessage(message.user, message.text, message.date)); 
+    // });
 
 //send data to web component
     //method: 3 give it through props
@@ -54,24 +86,23 @@ const setAttributes = (element, attributesObject) => {
     */
 
 //navigator buttons
-
-document.getElementsByName('route-link).forEach(element=>{
-            element.addEventListener('click',(event)=>{
-                    event.preventDefault();
-                    App.navigateTo(event.currentTarget.href)
-                }
-            )
-        })
+    document.getElementsByName('route-link).forEach(element=>{
+        element.addEventListener('click',(event)=>{
+                event.preventDefault();
+                App.navigateTo(event.currentTarget.href)
+            }
+        )
+    })
 
 //dispatching custom event
-this.addEventListener('click', ()=>{
-            let event = new CustomEvent('route-click', {
-                detail: {
-                  gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
-                }
-              });
-              this.dispatchEvent(event);
-        })
+    this.addEventListener('click', ()=>{
+        let event = new CustomEvent('route-click', {
+            detail: {
+                gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
+            }
+            });
+            this.dispatchEvent(event);
+    })
     
 //set routes to component
 
@@ -88,3 +119,21 @@ this.addEventListener('click', ()=>{
     <room-card href="/chat" name="route-link" >Time Mode</room-card>
     <room-card href="/chat" name="route-link" >Hit Mode</room-card>
     <room-card href="/chat" name="route-link" >Eat Mode</room-card>
+
+//shorthand object implementation is confusing for debugging    
+.updateOne({room: room}, 
+    { 
+        $push: { 
+          activeUsers: {
+            id, userName, room  //this is shorthand, it will make given variables as object field names
+          }
+        }
+    },{upsert:true})
+
+//==================== Achived functions
+    const setAttributes = (element, attributesObject) => {
+        console.log(attributesObject);
+        for (var key in attributesObject) {
+            element.setAttribute(key, attributesObject[key]);
+        }
+    }

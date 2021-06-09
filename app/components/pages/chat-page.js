@@ -71,6 +71,7 @@ class ChatPage extends LitElement{
         const room = App.room;
         const messageForm = this.shadowRoot.getElementById('message-form');
         const messagesDiv = this.shadowRoot.getElementById('messages-section');
+        let scrollBack = 2;
 
         //=================================== Socket emits
         //joining the correct room
@@ -84,21 +85,41 @@ class ChatPage extends LitElement{
             msgText.focus();
         })
 
+        messagesDiv.addEventListener("scroll", (e)=>{
+            if(e.target.scrollTop < 1){
+                socket.emit('loadMore', scrollBack);
+                scrollBack++;
+                e.target.scrollTop = 15;
+            }
+        });
+        
         //=================================== Socket Catches
 
-        socket.on('chatMessage', (messageData) => {
-            renderMessage(messageData);
-
-            //scrolldown
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        socket.on('chatMessage', ({messages, msgType}) => {
+            renderMessage(messages, msgType);
+            console.log(msgType);
+            
         })
+        
+        let renderMessage = (messages, msgType) => {
 
-        let renderMessage = (msgProps) => {
-            let msgDiv = document.createElement('user-message');
-
-            //send data to web component
-            msgDiv.props = msgProps;
-            messagesDiv.appendChild(msgDiv);
+            if(msgType === "down"){
+                let msgDiv = document.createElement('user-message');
+                msgDiv.props = messages[0];
+                messagesDiv.appendChild(msgDiv);
+            }else{
+                for (var i=messages.length-1; i>=0; i--) {
+                    let msgDiv = document.createElement('user-message');
+                    msgDiv.props = messages[i];
+                    messagesDiv.insertBefore(msgDiv, messagesDiv.firstChild);
+                }
+            }
+            if(msgType != "up"){
+                //$$! scrolldown, its too wierd, without timeout doesnot scroll to full down
+                setTimeout(()=>{
+                    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                },10); 
+            }
         }
     }
 }
