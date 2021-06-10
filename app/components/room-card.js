@@ -11,9 +11,13 @@ class RoomCard extends LitElement{
             border-radius: 20px;
             box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
             padding-bottom: 20px;
+
+            transition: all 0.4s ease-in-out;
         }
         #room-card:hover{
             cursor:pointer;
+            transform:scale(1.02);
+            box-shadow: 2px 2px 12px rgba(0,0,0,0.15);
         }
         .mode, .players{
             text-align:center;
@@ -35,16 +39,32 @@ class RoomCard extends LitElement{
             </div>
         `
     };
+
     firstUpdated() {
+        let animating = false;
+        let eventNoName = new CustomEvent('no-name', {
+            // detail: { }
+            bubbles: true, 
+            composed: true
+        });
 
         this.addEventListener('click', (event)=>{
-            App.room = this.shadowRoot.getElementById('mode').assignedNodes()[0].data;
-            App.navigateTo('/chat');
+            App.room = this.shadowRoot.getElementById('mode').assignedNodes()[0].data; //@@
+            if(App.userName){
+                App.navigateTo('/chat');
+            }else{
+                //highlight "please enter your name" //firing custom event to inform parent component 
+                if(!animating){
+                    this.dispatchEvent(eventNoName);
+                    setTimeout(() => {
+                        this.dispatchEvent(eventNoName);    
+                        animating = false
+                    }, 500);
+                }
+            }
         })
     }
-        
 
-    
     static get properties() {
         return { 
           players: { type: Number }

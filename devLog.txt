@@ -26,6 +26,9 @@ ukan unda gadmoyves username roca chatidan gamodis
 validacia chatshi saxelis gareshe ver unda shediodes
 pirdapir chatis linkze access ar unda qondes
 chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes
+ramdeni player ia shemosuli
+kodis shelamazeba
+weback build
 
 //==================== Modified working code 
        let renderMessage = (messages) => {
@@ -37,6 +40,43 @@ chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes
             })
         }
     }
+
+//sisulelea chatHistory array sul icvleba da shen mainc bolodan 10 15 20 .. poziciidan amokrefili elementebi mogaq
+    {
+      "$project": {
+        "message": {
+          "$slice": ["$chatHistory",-limit*timesBack, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+           //$$!! if position is more then array elements empty array is returned, we loose some starting messages
+        },
+        _id: 0
+      }
+    },
+//igivea sulelo arraySize icvleba da oriveshemtxvevashi magaze damokidebuli xar
+{
+    "$project": {
+    "message": {
+        "$slice": ["$chatHistory",{"$subtract":[{"$size":"$chatHistory"},limit*timesBack]}, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+        //$$!! if position is more then array elements empty array is returned, we loose some starting messages
+    },
+    _id: 0
+    }
+},
+//ramenairad pirveli getMessages dros (join rocaxdeba) magdrois chatHistory size unda sheinaxo yvela useristvis shesabamisi
+da shemdeg am cvladis mixedvit ukan ukan gadmoxvide poziciebi
+
+//Q: Updates with Aggregation Pipeline, aq update shi agregacia ro gavushvat da ramenairad historySize vtenot ar sheidzleba?
+  await collection.updateOne({room: room}, 
+    { 
+        $push: { 
+          activeUsers: {
+            id:id,
+            userName:userName,
+            room:room,
+            "$set":{historySize:{$"size":"$chatHistory"}}
+          }
+        }
+    },{upsert:true})
+}
 //=================================== Q/A
 Q: LIMIT DOESNOT WORK LIKE this
 let cursor = await collection.aggregate({

@@ -33,52 +33,56 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
 })
 
 //=================================== socketio
-
+let historySize = 32;
 io.on('connection',(socket)=>{
 
 //=================================== Socket Listeners
 
   socket.on('join', ({user, room})=>{
 
-    //check if autentificated?
-    
-    addActiveUser(socket.id, user, room);
-    //joining the correct room
-    socket.join(room)
-
-    //Now Get limited amount of messages from db and emit that to current user
-    getMessages(room, 10) //limit(5)
-    .then((data)=>{
-
-      //Q: can welcome message arrive before messages data? should I put other function in callback?
-      //$$!! there is not userdata ex: image of message, you should get images from somewhere else here else clinet side
-      //populate data with "userDetails" => images
-        //loop throught data, find all unique userNames, fetch userDetails data for this userNames from users collection
-        //assign userDetails to data => messages respectively
+      //check if autentificated?
+      getHistorySize(room)
+      .then((historySize)=>{
+        console.log(historySize);
+          addActiveUser(socket.id, user, room, historySize);
       
-      data.forEach((obj,index)=>{
-        //$$! find all unique names in data
-        
-        //extracting nested "message" object 
-        data[index] = obj.message;
+          //joining the correct room
+          socket.join(room)
+
+          //Now Get limited amount of messages from db and emit that to current user
+          getMessages(room,10,historySize) //limit(5)
+          .then((data)=>{
+
+            //Q: can welcome message arrive before messages data? should I put other function in callback?
+            //$$!! there is not userdata ex: image of message, you should get images from somewhere else here else clinet side
+            //populate data with "userDetails" => images
+              //loop throught data, find all unique userNames, fetch userDetails data for this userNames from users collection
+              //assign userDetails to data => messages respectively
+            
+            data.forEach((obj,index)=>{
+              //$$! find all unique names in data
+              
+              //extracting nested "message" object 
+              data[index] = obj.message;
+            })
+            //loop unique names and get all image sources
+            //loop data and assign correct sources to usernames
+
+            socket.emit('chatMessage', {messages:data, msgType:"upFirstLoad"} )
+            //----------------------------------------------------------------------
+
+            //just throw welcome message for current client
+            let msgWelcome = createMessage('ChatBot',`Welcome back ${user}`)
+            socket.emit('chatMessage', {messages:[msgWelcome], msgType:"down"});
+
+            //create welcome message and notify all clients in the room except current client
+            let msgJoined = createMessage('ChatBot',`${user} joined chat`)
+            socket.broadcast.to(room).emit('chatMessage', {messages:[msgJoined], msgType:"down"});
+
+            //saving chat login info (welcome message)
+            saveMessage(msgJoined,room);
+          })
       })
-      //loop unique names and get all image sources
-      //loop data and assign correct sources to usernames
-
-      socket.emit('chatMessage', {messages:data, msgType:"upFirstLoad"} )
-      //----------------------------------------------------------------------
-
-      //just throw welcome message for current client
-      let msgWelcome = createMessage('ChatBot',`Welcome back ${user}`)
-      socket.emit('chatMessage', {messages:[msgWelcome], msgType:"down"});
-
-      //create welcome message and notify all clients in the room except current client
-      let msgJoined = createMessage('ChatBot',`${user} joined chat`)
-      socket.broadcast.to(room).emit('chatMessage', {messages:[msgJoined], msgType:"down"});
-
-      //saving chat login info (welcome message)
-      saveMessage(msgJoined,room);
-    })
   })
 
   socket.on('chatMessage', (msgText)=>{
@@ -118,7 +122,7 @@ io.on('connection',(socket)=>{
         }
         //------------------------------------
         
-        getMessages(user.room,5,timesBack)
+        getMessages(user.room,5, user.historySize,timesBack) 
         .then((data)=>{
             data.forEach((obj,index)=>{
               //$$! find all unique names in data
@@ -175,9 +179,10 @@ let saveMessage = async (msg,room)=>{
           }
         }
     },{upsert:true})
+    
 }
 //$$! update users could also remove user from activeUsers
-let addActiveUser = async (id, userName, room)=>{
+let addActiveUser = async (id, userName, room, historySize)=>{
   let collection = Connection.get().collection('chatRooms');
   await collection.updateOne({room: room}, 
     { 
@@ -185,7 +190,8 @@ let addActiveUser = async (id, userName, room)=>{
           activeUsers: {
             id:id,
             userName:userName,
-            room:room
+            room:room,
+            historySize:historySize
           }
         }
     },{upsert:true})
@@ -242,9 +248,33 @@ let getActiveUser = async (id)=>{
   return converted
 }
 
+let getHistorySize = async (room)=>{
+  let collection = Connection.get().collection('chatRooms');
+  let cursor = await collection.aggregate([
+    {
+      "$match": {
+        room: room
+      }
+    },
+    {
+      $project: {
+        historySize: {
+          $size: "$chatHistory"
+        },
+        _id: 0
+      }
+    }
+  ])
+  let data = await cursor.toArray();
+  console.log(data);
+  return data[0].historySize;
+}
 
+let getMessages = async (room,limit,historySize,timesBack=1)=>{
+  // console.log(limit,historySize,timesBack);
+  let loadPos=historySize-1-(limit*timesBack);
+  console.log("loadPos=",loadPos);
 
-let getMessages = async (room,limit,timesBack=1)=>{
   let collection = Connection.get().collection('chatRooms');
   let cursor = await collection.aggregate([
     {
@@ -255,7 +285,7 @@ let getMessages = async (room,limit,timesBack=1)=>{
     {
       "$project": {
         "message": {
-          "$slice": ["$chatHistory",-limit*timesBack, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+          "$slice": ["$chatHistory",loadPos, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
            //$$!! if position is more then array elements empty array is returned, we loose some starting messages
         },
         _id: 0
@@ -265,7 +295,6 @@ let getMessages = async (room,limit,timesBack=1)=>{
       "$unwind": "$message"
     }
   ]) //you should find last N messages in room chatHistory   
-  console.log(limit*timesBack);
   let data = await cursor.toArray();
   return data;      
 }

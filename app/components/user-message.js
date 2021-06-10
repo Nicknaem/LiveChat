@@ -18,7 +18,7 @@ class UserMessage extends LitElement{
         <style>
 
         </style>
-            <div class="message ${this.props.userName == App.user ? "self":""}">
+            <div class="message ${this.props.userName == App.userName ? "self":""}">
                 <div class="image"></div>
                 <div class="name">${this.props.userName}</div>
                 <div class="text">${this.props.text}</div>

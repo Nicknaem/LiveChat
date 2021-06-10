@@ -67,7 +67,7 @@ class ChatPage extends LitElement{
 
     firstUpdated(){
         const socket = App.socket;
-        const user = App.user;
+        const user = App.userName;
         const room = App.room;
         const messageForm = this.shadowRoot.getElementById('message-form');
         const messagesDiv = this.shadowRoot.getElementById('messages-section');
