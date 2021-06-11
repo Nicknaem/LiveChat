@@ -8,8 +8,9 @@ const app = express()
 const server = http.createServer(app);
 const io = socketio(server);
 
-var Connection = require('./common/connection.js')
-var Config = require('./common/config.js');
+const Connection = require('./common/connection.js')
+const Config = require('./common/config.js');
+const Services = require('./modules/services.js');
 
 //=================================== Middleware
 app.use(express.json());                        //all coming requests will be converted to json for server
@@ -32,21 +33,19 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
   })
 })
 
-//=================================== socketio
-let recordsCount = 32;
-io.on('connection',(socket)=>{
 
+io.on('connection',(socket)=>{
 //=================================== Socket Listeners
 
   socket.on('join', ({user, room})=>{
       //check if autentificated?
 
-      getRecordsCount("chatHistory",room)
+      Services.getRecordsCount("chatHistory",room)
       .then((recordsCount)=>{
         // console.log("recordsCount onJoin", recordsCount);
-          addActiveUser(socket.id, user, room, recordsCount)
+          Services.addActiveUser(socket.id, user, room, recordsCount)
           .then(()=>{
-            getRecordsCount("activeUsers",room)
+            Services.getRecordsCount("activeUsers",room)
             .then((recordsCount)=>{
               // console.log("sending out count to other players");
               socket.broadcast.emit('playersCount',{room:room, count:recordsCount});
@@ -57,7 +56,7 @@ io.on('connection',(socket)=>{
           socket.join(room)
 
           //Now Get limited amount of messages from db and emit that to current user
-          getMessages(room,10,recordsCount) //limit(5)
+          Services.getMessages(room,10,recordsCount) //limit(5)
           .then((data)=>{
 
             //Q: can welcome message arrive before messages data? should I put other function in callback?
@@ -87,14 +86,14 @@ io.on('connection',(socket)=>{
             socket.broadcast.to(room).emit('chatMessage', {messages:[msgJoined], msgType:"down"});
 
             //saving chat login info (welcome message)
-            saveMessage(msgJoined,room);
+            Services.saveMessage(msgJoined,room);
           })
       })
   })
 
   socket.on('chatMessage', (msgText)=>{
     //getting this current active user Name and Room 
-    getActiveUser(socket.id).then((data)=>{
+    Services.getActiveUser(socket.id).then((data)=>{
 
       //$$! SHORTER VERSION NEEDED ---------
       let user;
@@ -107,18 +106,18 @@ io.on('connection',(socket)=>{
       //------------------------------------
 
       //getting data about user, image, achivements, vipStatus ...
-      getUserData(user.userName).then(userDetails =>{
+      Services.getUserData(user.userName).then(userDetails =>{
 
         io.to(user.room).emit('chatMessage', {messages:[createMessage(user.userName, msgText, null, userDetails)], msgType:"down"});
         //saving only necessary message information
-        saveMessage(createMessage(user.userName, msgText), user.room);
+        Services.saveMessage(createMessage(user.userName, msgText), user.room);
 
       })
     }) 
   })
 
   socket.on('loadMore', (timesBack)=>{
-    getActiveUser(socket.id).then((data)=>{
+    Services.getActiveUser(socket.id).then((data)=>{
         //$$! SHORTER VERSION NEEDED ---------
         let user;
         try{
@@ -129,7 +128,7 @@ io.on('connection',(socket)=>{
         }
         //------------------------------------
         
-        getMessages(user.room,5, user.recordsCount,timesBack) 
+        Services.getMessages(user.room,5, user.recordsCount,timesBack) 
         .then((data)=>{
             data.forEach((obj,index)=>{
               //$$! find all unique names in data
@@ -144,7 +143,7 @@ io.on('connection',(socket)=>{
   })
 
   socket.on('playersCount',(room)=>{
-    getRecordsCount('activeUsers',room)
+    Services.getRecordsCount('activeUsers',room)
     .then((recordsCount)=>{
       socket.emit('playersCount',{room:room, count:recordsCount});
     })
@@ -158,7 +157,7 @@ io.on('connection',(socket)=>{
   })
 
   const leaveChat = () => {
-    getActiveUser(socket.id).then(data=>{
+    Services.getActiveUser(socket.id).then(data=>{
       //$$! SHORTER VERSION NEEDED ---------
       let user;
       try{
@@ -173,176 +172,20 @@ io.on('connection',(socket)=>{
 
       socket.broadcast.to(user.room).emit('chatMessage', {messages:[leaveMessage], msgType:"down"});
       socket.leave(user.room)
-      // saveMessage(leaveMessage);
-      removeActiveUser(socket.id)
+      // Services.saveMessage(leaveMessage);
+      Services.removeActiveUser(socket.id)
 
-      getRecordsCount("activeUsers",user.room)
+      Services.getRecordsCount("activeUsers",user.room)
       .then((recordsCount)=>{
         // console.log("sending out count to other players");
         socket.broadcast.emit('playersCount',{room:user.room, count:recordsCount});
       })
     })
   }
+
 })
 
-//=================================== Mongo queries
-
-let saveMessage = async (msg,room)=>{
-  let collection = Connection.get().collection('chatRooms');
-  await collection.updateOne({room: room}, 
-    { 
-        $push: {
-          chatHistory: {
-            userName: msg.userName,
-            text: msg.text,
-            date: msg.date
-          }
-        }
-    },{upsert:true})
-    
-}
-//$$! update users could also remove user from activeUsers
-let addActiveUser = async (id, userName, room, recordsCount)=>{
-  let collection = Connection.get().collection('chatRooms');
-  await collection.updateOne({room: room}, 
-    { 
-        $push: { 
-          activeUsers: {
-            id:id,
-            userName:userName,
-            room:room,
-            recordsCount:recordsCount
-          }
-        }
-    },{upsert:true})
-}
-
-let removeActiveUser = async (id)=>{
-  let collection = Connection.get().collection('chatRooms');
-  //this Update query searches user in all active rooms, well this is not good solution.  
-  //Update doesnot return removed object
-  //findOneAndUpdate returns original removed object, but show all the document,couldnot project the only removed object from nested array
-  
-  let user = await collection.updateMany({},
-    {
-      $pull: {
-        activeUsers: {
-          id: id
-        }
-      }
-    },
-)
-/* 
-    {
-      multi: true
-    }
-*/
-}
-
-let getActiveUser = async (id)=>{
-  let collection = Connection.get().collection('chatRooms');
-  //find and return //$$## returns whole document
-  let user = await collection.aggregate([
-    {
-      "$match": {
-        "activeUsers.id": id
-      }
-    },
-    {
-      "$project": {
-        _id: 0,
-        activeUsers: 1
-      }
-    },
-    {
-      "$unwind": "$activeUsers"
-    },
-    {
-      "$match": {
-        "activeUsers.id": id
-      }
-    }
-  ])
-  //Q:user.toArray() didnot return user, tricky
-  let converted = await user.next();
-  return converted
-}
-
-let getRecordsCount = async (targetArray,room)=>{
-  let collection = Connection.get().collection('chatRooms');
-  let cursor = await collection.aggregate([
-    {
-      "$match": {
-        room: room
-      }
-    },
-    {
-      $project: {
-        recordsCount: {
-          $size: `$${targetArray}`
-        },
-        _id: 0
-      }
-    }
-  ])
-  let data = await cursor.toArray();
-  if(!data.length){
-    // console.log('couldnot get records count returning 0')
-    return 0;
-  }
-  return data[0].recordsCount;
-}
-
-let getMessages = async (room,limit,recordsCount,timesBack=1)=>{
-  // console.log('limit:',limit,'recordsCount:',recordsCount,'timesBack:',timesBack);
-
-  let loadPos=recordsCount-(limit*timesBack);
-  // if(loadPos === 0){
-  //   return [];
-  // }
-  if(loadPos<0){
-    limit = limit + loadPos
-    if(limit<=0){
-      return [];
-    }
-    loadPos = 0;
-    // console.log("loadpos is less than 0")
-  }
-
-  // console.log("calculated loadPos:",loadPos);
-  // console.log("calculated limit:",limit);
-
-  let collection = Connection.get().collection('chatRooms');
-  let cursor = await collection.aggregate([
-    {
-      "$match": {
-        room: room
-      }
-    },
-    {
-      "$project": {
-        "message": {
-          "$slice": ["$chatHistory",loadPos, limit ]
-           //$$!! if position is more then array elements empty array is returned, we loose some starting messages
-        },
-        _id: 0
-      }
-    },
-    {
-      "$unwind": "$message"
-    }
-  ]) //you should find last N messages in room chatHistory   
-  let data = await cursor.toArray();
-  return data;      
-}
-
-let getUserData = async (name)=>{
-  let collection = Connection.get().collection('users');
-  const searchCursor = await collection.find({name:name});
-  const foundUser = await searchCursor.next(); //$$ toArray doesnot work when one document is returned nor next
-  console.log("searched user in users collection",foundUser);
-  return foundUser;
-}
+//============================================================ Helper function
 
 let createMessage = (username, text, date, userDetails)=>{
   let msgData ={
@@ -356,8 +199,7 @@ let createMessage = (username, text, date, userDetails)=>{
   return msgData;
 }
 
-
-//=================================== Routes
+//============================================================ Routes
 
 app.post('/login', (req,res)=>{
   //if req.pin == db.findUser.pin 

@@ -6,8 +6,8 @@ chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes DONE
 
 getter ebze gadaakete static fieldebi
 pirdapir chatis linkze access ar unda qondes
-ramdeni player ia shemosuli
-kodis shelamazeba
+ramdeni player ia shemosuli DONE
+kodis shelamazeba 
 weback build
 
 //=================================== Q/A
