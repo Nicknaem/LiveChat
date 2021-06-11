@@ -5,6 +5,11 @@ import App from "/app.js"
 class MainPage extends LitElement{
     static get styles() {
         return css`
+            #chat-page{
+                width: 1124px;
+                margin:auto;   
+            }
+
             #room-section, #user-section{
                 margin-top: 50px;
                 display: flex;
@@ -22,19 +27,24 @@ class MainPage extends LitElement{
                     height: 170px;
                     width: 170px;
                     border-radius: 50%;
-                    background-color:rgb(189, 236, 189);
                     background-size: cover;
                     background-position: center;
-                    box-shadow: 1px 1px 7px 0px rgb(0 0 0 / 30%)
+
+                    background-color: linear-gradient(145deg, #cacaca, #f0f0f0);
+                    box-shadow:  6px 6px 12px #bebebe,-6px -6px 12px #ffffff;
                 }
                 #user-input{
                     margin-top: 40px;
                     border: none;
                     outline: none;
-                    box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
                     border-radius:50px;
                     font-size: 1.5em;
                     padding: 10px 15px;
+                    background-color:transparent;
+                    box-shadow: 7px 7px 25px #bebebe,
+                                -7px -7px 35px rgba(255, 255, 255, .7),
+                                rgb(240 240 240) 0px 0px 2px 4px inset,
+                                rgb(190 190 190) 5px 5px 8px inset; 
 
                     transition: all 0.3s ease-out;
                 }
@@ -46,19 +56,19 @@ class MainPage extends LitElement{
                 }
                 .light{
                     transform:scale(1.08);
-                    box-shadow: 3px 3px 10px rgba(0,0,0,0.2) !important;
                 }
         `
     }
     
     render(){       
         return html`
+        <div id="chat-page">
             <div id="user-section">
                 <div id="leaderboard">
                     
                 </div>
                 <div id="user-info">
-                    <div id="user-image" style='background-image:url("/Assets/Snakes/snake1.jpg")'></div>
+                    <div id="user-image" style='background-image:url("/Assets/Snakes/snake1.png")'></div>
                     <input id="user-input" class="${this.animating?"light":""}" type="text" placeholder="Enter your name" value="${App.userName?App.userName:""}" required> <!--@@-->
                 </div>
                 <div id="stats">
@@ -70,6 +80,7 @@ class MainPage extends LitElement{
                 <room-card>Hit Mode</room-card>
                 <room-card>Eat Mode</room-card>
             </div>
+        </div>
         `
     }
     static get properties() {

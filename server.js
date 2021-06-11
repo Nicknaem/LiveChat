@@ -297,9 +297,9 @@ let getMessages = async (room,limit,recordsCount,timesBack=1)=>{
   // console.log('limit:',limit,'recordsCount:',recordsCount,'timesBack:',timesBack);
 
   let loadPos=recordsCount-(limit*timesBack);
-  if(loadPos === 0){
-    return [];
-  }
+  // if(loadPos === 0){
+  //   return [];
+  // }
   if(loadPos<0){
     limit = limit + loadPos
     if(limit<=0){

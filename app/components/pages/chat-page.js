@@ -6,32 +6,93 @@ class ChatPage extends LitElement{
     static get styles() {
         return css`
             #chat-page{
-                height:100vh;
+                height:100%;
                 display:flex;
                 align-items:center;
+                justify-content:space-around;
+                background-color:#e7e7e7
             }
-            #chat-section{
-                display:flex;
-                flex-direction:column;
-                height:80%;
-                width:25%;
-                justify-self:end;
-            }
-            #messages-section{
-                height:80%;
-                overflow-y:scroll;
-            }
-            #message-form{
-                height:20%;
+            #chat-page > div {
+                border-radius: 25px;
+                background: #e7e7e7;
+                box-shadow:  6px 6px 12px #bebebe,-6px -6px 12px #ffffff;
             }
             #stats-section{
                 width:25%;
-                height:80%;
+                height:70%;
             }
+
             #game-board{
-                width:50%;
-                height:80%;
+                width:40%;
+                height:70%;
+                box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
             }
+
+            #chat-section{
+                display:flex;
+                flex-direction:column;
+                height:70%;
+                width:25%;
+            }
+                #messages-section{
+                    height:80%;
+                    overflow-y:scroll;
+                }
+                #message-form{
+                    height:20%;
+                    display:flex;
+                    border-radius:10px;
+                    margin:15px
+                }
+                #message-input{
+                    flex-grow:1;
+                    outline:none;
+                    border:none;
+                    background-color:transparent;
+                    box-shadow: 7px 7px 25px #bebebe,
+                    -7px -7px 35px rgba(255, 255, 255, .7),
+                    rgb(245 245 245) 0px 0px 2px 4px inset,
+                    rgb(190 190 190) 5px 5px 8px inset; 
+                    border-radius: 15px 0px 0px 15px;
+                    padding:10px;
+                    font-size:1.2em;
+                }
+                #message-button{
+                    width:20%;
+                    outline:none;
+                    border:none;
+                    background: linear-gradient(145deg, #f0f0f0, #cacaca);
+                    box-shadow: rgb(190 190 190) 5px 5px 12px 0px, inset rgb(245 245 245 / 67%) 0px 0px 8px 2px;
+                    border-radius:0px 15px 15px 0px;
+                }
+                
+                #messages-section {
+                    border-radius:inherit;
+                    overflow: overlay;
+                    overflow-x: hidden;
+                    font-family: var(--generalFont);
+                }
+                /* total width */
+                #messages-section::-webkit-scrollbar {
+                width: 17px;
+                /* background-color: transparent; */
+                }
+                
+                /* scrollbar itself */
+                #messages-section::-webkit-scrollbar-thumb {
+                    background-color: #bebebe;
+                    border-radius: 15px;
+                    width: 5px;
+                    border: 4px solid transparent;
+                    background-clip: content-box;
+                }
+                
+                /* set button(top and bottom of the scrollbar) */
+                #messages-section::-webkit-scrollbar-button {
+                    display:none;
+                }
+
+
 
         `;
     }
@@ -89,7 +150,7 @@ class ChatPage extends LitElement{
             if(e.target.scrollTop < 1){
                 socket.emit('loadMore', scrollBack);
                 scrollBack++;
-                e.target.scrollTop = 15;
+                e.target.scrollTop = 6;
             }
         });
         

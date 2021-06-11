@@ -9,7 +9,8 @@ class RoomCard extends LitElement{
             flex-direction: column;
             width: 300px;
             border-radius: 20px;
-            box-shadow: 1px 1px 5px rgba(0,0,0,0.2);
+            background-color: #e7e7e7;
+            box-shadow:  6px 6px 12px #bebebe,-6px -6px 12px #ffffff;
             padding-bottom: 20px;
 
             transition: all 0.4s ease-in-out;
@@ -17,7 +18,8 @@ class RoomCard extends LitElement{
         #room-card:hover{
             cursor:pointer;
             transform:scale(1.02);
-            box-shadow: 2px 2px 12px rgba(0,0,0,0.15);
+            background-color: #eaeaea;
+            box-shadow:  6px 6px 17px #bebebe,-6px -6px 17px #ffffff;
         }
         .mode, .players{
             text-align:center;
