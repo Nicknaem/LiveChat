@@ -24,7 +24,7 @@ class UserMessage extends LitElement{
                     width:40px;
                     height:40px;
                     border-radius:50%;
-                    background-color:gray;
+                    box-shadow:  rgb(190 190 190) 3px 3px 7px 0px, rgb(255 255 255) -3px -4px 11px 0px;
                 }
                 .info{
                     flex-grow:2;
@@ -57,7 +57,7 @@ class UserMessage extends LitElement{
 
         </style>
             <div class="message">
-                <div class="image"></div>
+                <div class="image" style="background-image:${this.image}"></div>
                 <div class="info ${this.style}">
                     <div class="message-header">
                         <div class="name">${this.props.userName}</div>
@@ -71,16 +71,21 @@ class UserMessage extends LitElement{
     };
     //@@ prop initialisation should happpen here?
     firstUpdated(){
+
+        //images are hardcoded for temporary use, images will come through message props
         switch(this.props.userName){
             case App.userName:{
                 this.style = "self"
+                this.image = "linear-gradient(135deg, rgba(0,0,0,0.22), rgba(255,255,255,0.25))"
                 break
             }
             case "ChatBot":{
                 this.style = "bot"
+                this.image = "linear-gradient(135deg, rgba(0,0,0,0.22), rgba(255,255,255,0.25))"
                 break;
             }
             default:{
+                this.image = "linear-gradient(135deg, rgba(0,0,0,0.22), rgba(255,255,255,0.25))"
                 this.style = "others"
                 break;
             }
@@ -93,7 +98,8 @@ class UserMessage extends LitElement{
           props: {
               type: Object
           },
-          style: { type: String}
+          style: { type: String},
+          image: {type:String}
         };
     }
 
