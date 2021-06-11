@@ -39,11 +39,11 @@ io.on('connection',(socket)=>{
 //=================================== Socket Listeners
 
   socket.on('join', ({user, room})=>{
-
       //check if autentificated?
+
       getHistorySize(room)
       .then((historySize)=>{
-        console.log(historySize);
+        // console.log("historySize onJoin", historySize);
           addActiveUser(socket.id, user, room, historySize);
       
           //joining the correct room
@@ -266,14 +266,31 @@ let getHistorySize = async (room)=>{
     }
   ])
   let data = await cursor.toArray();
-  console.log(data);
+  if(!data.length){
+    console.log('couldnot get history size returning 0')
+    return 0;
+  }
   return data[0].historySize;
 }
 
 let getMessages = async (room,limit,historySize,timesBack=1)=>{
-  // console.log(limit,historySize,timesBack);
-  let loadPos=historySize-1-(limit*timesBack);
-  console.log("loadPos=",loadPos);
+  // console.log('limit:',limit,'historySize:',historySize,'timesBack:',timesBack);
+
+  let loadPos=historySize-(limit*timesBack);
+  if(loadPos === 0){
+    return [];
+  }
+  if(loadPos<0){
+    limit = limit + loadPos
+    if(limit<=0){
+      return [];
+    }
+    loadPos = 0;
+    // console.log("loadpos is less than 0")
+  }
+
+  // console.log("calculated loadPos:",loadPos);
+  // console.log("calculated limit:",limit);
 
   let collection = Connection.get().collection('chatRooms');
   let cursor = await collection.aggregate([
@@ -285,7 +302,7 @@ let getMessages = async (room,limit,historySize,timesBack=1)=>{
     {
       "$project": {
         "message": {
-          "$slice": ["$chatHistory",loadPos, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+          "$slice": ["$chatHistory",loadPos, limit ]
            //$$!! if position is more then array elements empty array is returned, we loose some starting messages
         },
         _id: 0

@@ -1,36 +1,62 @@
+//=================================== Tasks
+innerHtml insertAdjacentHTML moashore DONE
+ukan unda gadmoyves username roca chatidan gamodis DONE
+validacia chatshi saxelis gareshe ver unda shediodes DONE
+chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes DONE
 
-Q: am I gvinig data to component correctly?
-Q: give data to component in props maybe object
-Q: using Id's in web component styling
-
-
-Q: room-card event
-Q: routes order
-Q: custom element bubble up
-Q: gameMode: this.shadowRoot.getElementById('mode').assignedNodes()[0].data
-
-$$: message records should be updated async
-
-Q: can I make mongo query not async?
-
-Q: cannot read attribute set on custom element <room-card href="/chat">
-Q: global styles override component styles * margin
-Q: getElementsByName didnot work on this.shadowRoot
-Q: connectedcallback doesnot see DOM
-
-
-//==================== Tasks
 getter ebze gadaakete static fieldebi
-innerHtml ebi da komentarebi moashore
-ukan unda gadmoyves username roca chatidan gamodis
-validacia chatshi saxelis gareshe ver unda shediodes
 pirdapir chatis linkze access ar unda qondes
-chemi da sxvisi mesijebi sxvadasxvanairad unda ifiltrebodes
 ramdeni player ia shemosuli
 kodis shelamazeba
 weback build
 
-//==================== Modified working code 
+//=================================== Q/A
+Q: am I gvinig data to component correctly?
+  A: idk
+Q: can I give data to component in props maybe object
+  A: in lit-element you can
+Q: using Id's in web component styling
+  A: no problem
+
+Q: room-card event
+  A: throwing custom elements to bind data from child to parent
+Q: custom element event bubble up
+  A: event won't bubble up by default if respective option is not assgined
+Q: cannot read attribute set on custom element <room-card href="/chat">
+  A: you have to declare it inside component to access like that
+Q: connectedcallback doesnot see DOM
+  A:yea, you would better read liveCycle of lit-element
+
+
+Q: getting data of slotted element this.shadowRoot.getElementById('mode').assignedNodes()[0].data is there any fancier method?
+Q: can I make mongo query not async? so I wont need to use .then
+Q: alter .then with await?
+Q: global styles override component styles * margin
+
+
+//=================================== Q/A Codes
+Q: LIMIT DOESNOT WORK LIKE this
+let cursor = await collection.aggregate({
+      "$match": {
+        room: room
+      }
+    },
+    {
+      "$project": {
+        chatHistory: 1,
+        _id: 0
+      }
+    },
+    {
+      "$unwind": "$chatHistory"
+    },
+    {
+      "$limit": 2
+    })
+A: it just needed [] square brackets to make limit stage work!!!
+
+//=================================== Modified working code 
+
        let renderMessage = (messages) => {
 
             messages.forEach((msg)=>{
@@ -61,8 +87,18 @@ weback build
     _id: 0
     }
 },
+
 //ramenairad pirveli getMessages dros (join rocaxdeba) magdrois chatHistory size unda sheinaxo yvela useristvis shesabamisi
 da shemdeg am cvladis mixedvit ukan ukan gadmoxvide poziciebi
+//gmerto shenmishvele rato vitanjav tavs, ase mushaobs magram bagi aqvs sul magla amosvlisas
+  "message": {
+          "$slice": ["$chatHistory",loadPos, { "$cond": [{ $gt: [limit*timesBack, {"$size": "$chatHistory"} ]},null,limit] }]
+           //$$!! if position is more then array elements empty array is returned, we loose some starting messages
+        },
+        _id: 0
+      }
+
+//----------------------------------------------------------------------
 
 //Q: Updates with Aggregation Pipeline, aq update shi agregacia ro gavushvat da ramenairad historySize vtenot ar sheidzleba?
   await collection.updateOne({room: room}, 
@@ -77,28 +113,8 @@ da shemdeg am cvladis mixedvit ukan ukan gadmoxvide poziciebi
         }
     },{upsert:true})
 }
-//=================================== Q/A
-Q: LIMIT DOESNOT WORK LIKE this
-let cursor = await collection.aggregate({
-      "$match": {
-        room: room
-      }
-    },
-    {
-      "$project": {
-        chatHistory: 1,
-        _id: 0
-      }
-    },
-    {
-      "$unwind": "$chatHistory"
-    },
-    {
-      "$limit": 2
-    })
-A: it just needed [] square brackets to make limit stage work!!!
 
-//==================== Removed codes
+//=================================== Removed codes
 
 //emit all messages to client, check for userData and send its details also 
     // response.forEach(msg => {

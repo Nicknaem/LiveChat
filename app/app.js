@@ -1,15 +1,25 @@
 export default class App{
-  //  static socket;
- //   static appRoot;
-  //  static user;
- //   static room;
-  //  static loginStatus = true;
+    //@@ why should I make getters instead of just declaring them as static fields?
+    //doesnot event work, says stack size exceeded
+    // static set socket(data){
+    //     this.socket = data;
+    // }
+    // static get socket(){
+    //     return this.socket;
+    // }
+
+    //static socket;
+
+    // static appRoot;
+    // static user;
+    // static room;
+    // static loginStatus = true;
 
     static get routes(){
         return [
-            { path:"/", page: "<main-page></main-page>"},
-            { path:"/chat", page: "<chat-page></chat-page>" },
-            { path:"/leaderboard", page: "<leaderboard-page></leaderboard-page>"}
+            { path:"/", page: "main-page"},
+            { path:"/chat", page: "chat-page" },
+            { path:"/leaderboard", page: "leaderboard-page"}
         ]
     }
     static updateRoute = ()=>{
@@ -33,9 +43,23 @@ export default class App{
     }
 
     static loadPage(page){
-        this.appRoot.innerHTML = page;
+        let pageComponent = document.createElement(page)
+        this.appRoot.appendChild(pageComponent);
+
+        if(this.appRoot.childElementCount > 1){
+            //set slideOff effect to first child
+            //slide in effect to last child
+        }
+        setTimeout(() => {
+            if(this.appRoot.childElementCount > 1)
+            this.appRoot.firstElementChild.remove()
+        }, 0); //set time out for animation
     }
 }
+//----------------------------------------------------------------------
+import '/components/pages/chat-page.js'
+import '/components/pages/main-page.js'
+
 App.socket = io();
 App.appRoot = document.getElementById('app-root');
 

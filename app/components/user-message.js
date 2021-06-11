@@ -8,6 +8,9 @@ class UserMessage extends LitElement{
             .self{
                 background-color:rgba(0,100,0,0.3);
             }
+            .bot{
+                background-color:rgba(0,0,200,0.3);
+            }
         `;
     }
             // .image{
@@ -18,7 +21,7 @@ class UserMessage extends LitElement{
         <style>
 
         </style>
-            <div class="message ${this.props.userName == App.userName ? "self":""}">
+            <div class="message ${this.style}">
                 <div class="image"></div>
                 <div class="name">${this.props.userName}</div>
                 <div class="text">${this.props.text}</div>
@@ -26,12 +29,27 @@ class UserMessage extends LitElement{
             </div>
         `
     };
+    //@@ prop initialisation should happpen here?
+    firstUpdated(){
+        switch(this.props.userName){
+            case App.userName:{
+                this.style = "self"
+                break
+            }
+            case "ChatBot":{
+                this.style = "bot"
+                break;
+            }
+        }
+    }
 
+    //@@ should I declare props for only inside component use
     static get properties() {
         return { 
           props: {
               type: Object
-          }
+          },
+          style: { type: String}
         };
     }
 

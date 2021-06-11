@@ -90,11 +90,9 @@ class MainPage extends LitElement{
         }) 
 
         this.addEventListener('no-name',()=>{
-            console.log("movdivar");
             this.animating = !this.animating;
         })
 
-        
         //creating account
         /* 
             on OK, post {userName, pin}, and insert it to database users collection

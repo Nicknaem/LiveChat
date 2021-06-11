@@ -97,8 +97,6 @@ class ChatPage extends LitElement{
 
         socket.on('chatMessage', ({messages, msgType}) => {
             renderMessage(messages, msgType);
-            console.log(msgType);
-            
         })
         
         let renderMessage = (messages, msgType) => {
