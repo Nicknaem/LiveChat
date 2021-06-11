@@ -103,13 +103,6 @@ class MainPage extends LitElement{
         this.addEventListener('no-name',()=>{
             this.animating = !this.animating;
         })
-
-        //creating account
-        /* 
-            on OK, post {userName, pin}, and insert it to database users collection
-            and => login
-            else please login or create account
-        */
     }
 
 }
