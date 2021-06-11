@@ -33,7 +33,7 @@ MongoClient.connect( Config.mongodb.dbUrl , Config.mongodb.options, (err,client)
 })
 
 //=================================== socketio
-let historySize = 32;
+let recordsCount = 32;
 io.on('connection',(socket)=>{
 
 //=================================== Socket Listeners
@@ -41,16 +41,23 @@ io.on('connection',(socket)=>{
   socket.on('join', ({user, room})=>{
       //check if autentificated?
 
-      getHistorySize(room)
-      .then((historySize)=>{
-        // console.log("historySize onJoin", historySize);
-          addActiveUser(socket.id, user, room, historySize);
+      getRecordsCount("chatHistory",room)
+      .then((recordsCount)=>{
+        // console.log("recordsCount onJoin", recordsCount);
+          addActiveUser(socket.id, user, room, recordsCount)
+          .then(()=>{
+            getRecordsCount("activeUsers",room)
+            .then((recordsCount)=>{
+              // console.log("sending out count to other players");
+              socket.broadcast.emit('playersCount',{room:room, count:recordsCount});
+            })
+          })
       
           //joining the correct room
           socket.join(room)
 
           //Now Get limited amount of messages from db and emit that to current user
-          getMessages(room,10,historySize) //limit(5)
+          getMessages(room,10,recordsCount) //limit(5)
           .then((data)=>{
 
             //Q: can welcome message arrive before messages data? should I put other function in callback?
@@ -122,7 +129,7 @@ io.on('connection',(socket)=>{
         }
         //------------------------------------
         
-        getMessages(user.room,5, user.historySize,timesBack) 
+        getMessages(user.room,5, user.recordsCount,timesBack) 
         .then((data)=>{
             data.forEach((obj,index)=>{
               //$$! find all unique names in data
@@ -133,6 +140,13 @@ io.on('connection',(socket)=>{
             socket.emit('chatMessage', {messages:data, msgType:"up"})
         })
 
+    })
+  })
+
+  socket.on('playersCount',(room)=>{
+    getRecordsCount('activeUsers',room)
+    .then((recordsCount)=>{
+      socket.emit('playersCount',{room:room, count:recordsCount});
     })
   })
 
@@ -161,6 +175,12 @@ io.on('connection',(socket)=>{
       socket.leave(user.room)
       // saveMessage(leaveMessage);
       removeActiveUser(socket.id)
+
+      getRecordsCount("activeUsers",user.room)
+      .then((recordsCount)=>{
+        // console.log("sending out count to other players");
+        socket.broadcast.emit('playersCount',{room:user.room, count:recordsCount});
+      })
     })
   }
 })
@@ -182,7 +202,7 @@ let saveMessage = async (msg,room)=>{
     
 }
 //$$! update users could also remove user from activeUsers
-let addActiveUser = async (id, userName, room, historySize)=>{
+let addActiveUser = async (id, userName, room, recordsCount)=>{
   let collection = Connection.get().collection('chatRooms');
   await collection.updateOne({room: room}, 
     { 
@@ -191,7 +211,7 @@ let addActiveUser = async (id, userName, room, historySize)=>{
             id:id,
             userName:userName,
             room:room,
-            historySize:historySize
+            recordsCount:recordsCount
           }
         }
     },{upsert:true})
@@ -248,7 +268,7 @@ let getActiveUser = async (id)=>{
   return converted
 }
 
-let getHistorySize = async (room)=>{
+let getRecordsCount = async (targetArray,room)=>{
   let collection = Connection.get().collection('chatRooms');
   let cursor = await collection.aggregate([
     {
@@ -258,8 +278,8 @@ let getHistorySize = async (room)=>{
     },
     {
       $project: {
-        historySize: {
-          $size: "$chatHistory"
+        recordsCount: {
+          $size: `$${targetArray}`
         },
         _id: 0
       }
@@ -267,16 +287,16 @@ let getHistorySize = async (room)=>{
   ])
   let data = await cursor.toArray();
   if(!data.length){
-    console.log('couldnot get history size returning 0')
+    // console.log('couldnot get records count returning 0')
     return 0;
   }
-  return data[0].historySize;
+  return data[0].recordsCount;
 }
 
-let getMessages = async (room,limit,historySize,timesBack=1)=>{
-  // console.log('limit:',limit,'historySize:',historySize,'timesBack:',timesBack);
+let getMessages = async (room,limit,recordsCount,timesBack=1)=>{
+  // console.log('limit:',limit,'recordsCount:',recordsCount,'timesBack:',timesBack);
 
-  let loadPos=historySize-(limit*timesBack);
+  let loadPos=recordsCount-(limit*timesBack);
   if(loadPos === 0){
     return [];
   }

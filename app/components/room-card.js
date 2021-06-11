@@ -35,12 +35,14 @@ class RoomCard extends LitElement{
         return html` 
             <div id="room-card">
                <div class="mode"><slot id="mode"></slot></div>
-               <div class="players">${this.players} Players</div>
+               <div class="players">${this.playersCount} Players</div>
             </div>
         `
     };
 
     firstUpdated() {
+        let roomName = this.shadowRoot.getElementById('mode').assignedNodes()[0].data; //@@
+        this.playersCount = 0;
         let animating = false;
         let eventNoName = new CustomEvent('no-name', {
             // detail: { }
@@ -48,8 +50,18 @@ class RoomCard extends LitElement{
             composed: true
         });
 
+        const socket = App.socket;
+
+        socket.emit('playersCount',roomName)
+        socket.on('playersCount',({room,count})=>{
+            // console.log('gotdata',room,count,"cardName:",roomName);
+            if(room === roomName){
+                this.playersCount = count;
+            }
+        })
+
         this.addEventListener('click', (event)=>{
-            App.room = this.shadowRoot.getElementById('mode').assignedNodes()[0].data; //@@
+            App.room = roomName
             if(App.userName){
                 App.navigateTo('/chat');
             }else{
@@ -67,7 +79,7 @@ class RoomCard extends LitElement{
 
     static get properties() {
         return { 
-          players: { type: Number }
+          playersCount: { type: Number }
         };
     }
 
