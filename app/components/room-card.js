@@ -47,6 +47,7 @@ class RoomCard extends LitElement{
         this.playersCount = 0;
         let animating = false;
         let eventNoName = new CustomEvent('no-name', {
+            // detail: { }
             bubbles: true, 
             composed: true
         });
@@ -55,6 +56,7 @@ class RoomCard extends LitElement{
 
         socket.emit('playersCount',roomName)
         socket.on('playersCount',({room,count})=>{
+            // console.log('gotdata',room,count,"cardName:",roomName);
             if(room === roomName){
                 this.playersCount = count;
             }
@@ -65,6 +67,7 @@ class RoomCard extends LitElement{
             if(App.userName){
                 App.navigateTo('/chat');
             }else{
+                //highlight "please enter your name" //firing custom event to inform parent component 
                 if(!animating){
                     this.dispatchEvent(eventNoName);
                     setTimeout(() => {
@@ -82,5 +85,15 @@ class RoomCard extends LitElement{
         };
     }
 
+    // static get observedAttributes() {
+    //     return ["someAttribute"];
+    // }
+
+    // attributeChangedCallback(name, oldValue, newValue) {
+    //     if (oldValue === newValue) {
+    //         return;
+    //     }    
+    //     console.log(`The attribute ${name} has changed`);
+    // }
 }
 window.customElements.define('room-card', RoomCard);

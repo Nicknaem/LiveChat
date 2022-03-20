@@ -48,7 +48,9 @@ class UserMessage extends LitElement{
                 }
         `;
     }
-
+            // .image{
+            //     /* background-image:url(${this.props.userDetails.image}) */
+            // }
     render(){       
         return html`
         <style>
@@ -67,9 +69,10 @@ class UserMessage extends LitElement{
             </div>
         `
     };
-
+    //@@ prop initialisation should happpen here?
     firstUpdated(){
 
+        //images are hardcoded for temporary use, images will come through message props
         switch(this.props.userName){
             case App.userName:{
                 this.style = "self"
@@ -89,6 +92,7 @@ class UserMessage extends LitElement{
         }
     }
 
+    //@@ should I declare props for only inside component use
     static get properties() {
         return { 
           props: {
@@ -99,5 +103,15 @@ class UserMessage extends LitElement{
         };
     }
 
+    // static get observedAttributes() {
+    //     return ["someAttribute"];
+    // }
+
+    // attributeChangedCallback(name, oldValue, newValue) {
+    //     if (oldValue === newValue) {
+    //         return;
+    //     }    
+    //     console.log(`The attribute ${name} has changed`);
+    // }
 }
 window.customElements.define('user-message', UserMessage);

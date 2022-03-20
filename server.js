@@ -13,8 +13,8 @@ const Config = require('./common/config.js');
 const Services = require('./modules/services.js');
 
 //=================================== Middleware
-app.use(express.json());                        
-app.use(express.static(__dirname + '/app'));   
+app.use(express.json());                        //all coming requests will be converted to json for server
+app.use(express.static(__dirname + '/app'));    //serve static files
 
 //================================== MongoDb connection
 const MongoClient = require('mongodb').MongoClient;
@@ -38,40 +38,54 @@ io.on('connection',(socket)=>{
 //=================================== Socket Listeners
 
   socket.on('join', ({user, room})=>{
-      //check if autentificated here
+      //check if autentificated?
 
       Services.getRecordsCount("chatHistory",room)
       .then((recordsCount)=>{
+        // console.log("recordsCount onJoin", recordsCount);
           Services.addActiveUser(socket.id, user, room, recordsCount)
           .then(()=>{
             Services.getRecordsCount("activeUsers",room)
             .then((recordsCount)=>{
+              // console.log("sending out count to other players");
               socket.broadcast.emit('playersCount',{room:room, count:recordsCount});
             })
           })
       
+          //joining the correct room
           socket.join(room)
 
+          //Now Get limited amount of messages from db and emit that to current user
           Services.getMessages(room,10,recordsCount) //limit(5)
           .then((data)=>{
+
+            //Q: can welcome message arrive before messages data? should I put other function in callback?
+            //$$!! there is not userdata ex: image of message, you should get images from somewhere else here else clinet side
+            //populate data with "userDetails" => images
+              //loop throught data, find all unique userNames, fetch userDetails data for this userNames from users collection
+              //assign userDetails to data => messages respectively
             
             data.forEach((obj,index)=>{
-              //$$! find all unique names in data to get all user images and assign them to messages onLoad
+              //$$! find all unique names in data
               
               //extracting nested "message" object 
               data[index] = obj.message;
             })
-
+            //loop unique names and get all image sources
+            //loop data and assign correct sources to usernames
 
             socket.emit('chatMessage', {messages:data, msgType:"upFirstLoad"} )
             //----------------------------------------------------------------------
 
+            //just throw welcome message for current client
             let msgWelcome = createMessage('ChatBot',`Welcome back ${user}`)
             socket.emit('chatMessage', {messages:[msgWelcome], msgType:"down"});
 
+            //create welcome message and notify all clients in the room except current client
             let msgJoined = createMessage('ChatBot',`${user} joined chat`)
             socket.broadcast.to(room).emit('chatMessage', {messages:[msgJoined], msgType:"down"});
 
+            //saving chat login info (welcome message)
             Services.saveMessage(msgJoined,room);
           })
       })
@@ -81,7 +95,7 @@ io.on('connection',(socket)=>{
     //getting this current active user Name and Room 
     Services.getActiveUser(socket.id).then((data)=>{
 
-      //$$! SHORTER VERSION NEEDED WRAP IT UP ---------
+      //$$! SHORTER VERSION NEEDED ---------
       let user;
       try{
         user = data.activeUsers;
@@ -104,7 +118,7 @@ io.on('connection',(socket)=>{
 
   socket.on('loadMore', (timesBack)=>{
     Services.getActiveUser(socket.id).then((data)=>{
-        //$$! SHORTER VERSION NEEDED WRAP IT UP ---------
+        //$$! SHORTER VERSION NEEDED ---------
         let user;
         try{
           user = data.activeUsers;
@@ -144,7 +158,7 @@ io.on('connection',(socket)=>{
 
   const leaveChat = () => {
     Services.getActiveUser(socket.id).then(data=>{
-      //$$! SHORTER VERSION NEEDED WRAP IT UP ---------
+      //$$! SHORTER VERSION NEEDED ---------
       let user;
       try{
         user = data.activeUsers;
@@ -158,11 +172,12 @@ io.on('connection',(socket)=>{
 
       socket.broadcast.to(user.room).emit('chatMessage', {messages:[leaveMessage], msgType:"down"});
       socket.leave(user.room)
-      Services.saveMessage(leaveMessage,user.room);
+      // Services.saveMessage(leaveMessage);
       Services.removeActiveUser(socket.id)
 
       Services.getRecordsCount("activeUsers",user.room)
       .then((recordsCount)=>{
+        // console.log("sending out count to other players");
         socket.broadcast.emit('playersCount',{room:user.room, count:recordsCount});
       })
     })

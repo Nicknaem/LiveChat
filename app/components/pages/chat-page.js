@@ -135,7 +135,7 @@ class ChatPage extends LitElement{
         let scrollBack = 3;
 
         //=================================== Socket emits
-
+        //joining the correct room
         socket.emit('join', {user,room})
 
         messageForm.addEventListener('submit', (event) => {
