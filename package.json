@@ -12,7 +12,12 @@
   "license": "MIT",
   "dependencies": {
     "express": "^4.17.1",
+    "lit-element": "^2.5.1",
     "mongodb": "^3.6.9",
     "socket.io": "^4.1.2"
+  },
+  "devDependencies": {
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2"
   }
 }

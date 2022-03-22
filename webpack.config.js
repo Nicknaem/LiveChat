@@ -7,4 +7,10 @@ module.exports = {
         filename: 'liveChat.js',
         path: path.resolve(__dirname,"build")
     },
-}
+    resolve: {
+        roots: [
+            path.resolve(__dirname),
+            path.resolve(__dirname, 'app'),
+        ],
+    },
+};
